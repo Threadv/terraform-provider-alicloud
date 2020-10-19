@@ -49,6 +49,13 @@ func resourceAliyunSlbServerGroup() *schema.Resource {
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							MinItems: 1,
 						},
+						"server_ip": {
+							Type:     schema.TypeString,
+							Optional: true,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								return len(d.Get("server_ids").([]interface{})) > 1
+							},
+						},
 						"port": {
 							Type:         schema.TypeInt,
 							Required:     true,
@@ -137,11 +144,13 @@ func resourceAliyunSlbServerGroupRead(d *schema.ResourceData, meta interface{}) 
 			return WrapError(e)
 		}
 		t := k[2]
+		i := k[3]
 		s := map[string]interface{}{
 			"server_ids": value,
 			"port":       p,
 			"weight":     w,
 			"type":       t,
+			"server_ip":  i,
 		}
 		servers = append(servers, s)
 	}
@@ -185,6 +194,7 @@ func resourceAliyunSlbServerGroupUpdate(d *schema.ResourceData, meta interface{}
 								"port":      rms["port"],
 								"type":      rms["type"],
 								"weight":    rms["weight"],
+								"server_ip": rms["server_ip"],
 							}
 							rmservers = append(rmservers, rmsm)
 						}
@@ -226,6 +236,7 @@ func resourceAliyunSlbServerGroupUpdate(d *schema.ResourceData, meta interface{}
 								"port":      adds["port"],
 								"type":      adds["type"],
 								"weight":    adds["weight"],
+								"server_ip": adds["server_ip"],
 							}
 							addservers = append(addservers, addsm)
 						}
@@ -282,6 +293,7 @@ func resourceAliyunSlbServerGroupUpdate(d *schema.ResourceData, meta interface{}
 								"port":      s["port"],
 								"type":      s["type"],
 								"weight":    s["weight"],
+								"server_ip": s["server_ip"],
 							}
 							servers = append(servers, sm)
 						}
